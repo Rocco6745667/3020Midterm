@@ -46,6 +46,7 @@ export default class Calendar {
             'November',
             'December'
         ];
+        //add the months of the year from the list above
         const titleMonth = document.createElement('span');
         titleMonth.classList.add('calendar-title-month');
         titleMonth.innerText = monthNames[this.getMonth()];
@@ -57,12 +58,14 @@ export default class Calendar {
         this.getTitle().appendChild(titleYear);
     }
 
+    //renders the titles above
     render() {
         this.setTitle();
         this.renderDays();
         this.renderEvents();
     }
 
+    //renders the events above
     renderEvents() {
         this._resetAllColumns();
         const thisWeekEvents = this.events.filter(event => {
@@ -73,6 +76,7 @@ export default class Calendar {
         });
     }
 
+    //renders the days of the year
     renderDays() {
         const days = document.getElementById('calendar-days');
         days.innerHTML = '';
@@ -80,19 +84,22 @@ export default class Calendar {
         timelineColumn.classList.add('calendar-timeline-column');
         days.appendChild(timelineColumn);
 
+        //sets the days with monday at i=0 as its starting point ending at sunday with i=7
         let monday = this._getMonday(this.getDate());
         for (let i = 0; i < 7; i++) {
             const day = document.createElement('div');
             day.classList.add('calendar-day');
 
+            //adds the day name
             const dayName = document.createElement('span');
             dayName.classList.add('calendar-day-name');
             dayName.innerText = this._getDayName(monday);
             day.appendChild(dayName);
 
+            //adds the number of the day
             const dayNumber = document.createElement('span');
             dayNumber.classList.add('calendar-day-number');
-            // Check if monday is today
+            // Check if monday is today, starting point
             if (this._isToday(monday)) {
                 dayNumber.classList.add('calendar-day-number-today');
             } else {
@@ -101,12 +108,14 @@ export default class Calendar {
             dayNumber.innerText = monday.getDate();
             day.appendChild(dayNumber);
 
+            // adding the date based on its postion to monday
             days.appendChild(day);
             monday.setDate(monday.getDate() + 1);
         }
 
     }
 
+    //makes the day rows
     renderAllDayRow() {
         const calendarBody = document.getElementById('calendar-body');
         const allDayRow = document.createElement('div');
@@ -116,8 +125,10 @@ export default class Calendar {
         calendarBody.appendChild(allDayRow);
     }
 
+    //makes the hours of the day
     renderCalendarHours() {
         const calendarRows = document.getElementsByClassName('calendar-body-row');
+        //gets hours form the complier
         for (let i = 0; i < calendarRows.length; i++) {
             const calendarRow = calendarRows[i];
             const hourDiv = calendarRow.querySelector('.calendar-timeline-column');
@@ -138,16 +149,19 @@ export default class Calendar {
         }
     }
 
+    //renders the body of the calendar
     renderCalendarBody() {
         const calendarBody = document.getElementById('calendar-body');
         const calendarBodyRows = this._createCalendarBodyRows();
         calendarBody.appendChild(calendarBodyRows);
     }
 
+    //this allows for events to be renederd properly
     _renderEvent(event) {
         const timeSlots = this._getDaysAndHours(event.dateFrom, event.dateTo);
         timeSlots.forEach((slot, index) => {
             const cell = this._getCell(slot.day, slot.hour);
+            //this alows for the events to be registered properly 
             if (!cell.querySelector(`[data-event-id="${event.id}"]`)) {
                 const eventDiv = document.createElement('div');
                 eventDiv.classList.add('calendar-event');
@@ -162,6 +176,7 @@ export default class Calendar {
         this._setEventStartEndSize(event);
     }
 
+    //allows for the events properties to be created
     _addClicklistenerToEvent(eventDiv) {
         eventDiv.addEventListener('click', () => {
             const eventId = eventDiv.dataset.eventId;
@@ -175,9 +190,11 @@ export default class Calendar {
 
             const event = this.events.find(event => event.id === parseInt(eventId));
 
+            //adds the functianlity to create the event
             const eventBody = document.createElement('div');
             eventBody.classList.add('calendar-event-tooltip-body');
 
+            //creates the functianlty to close the event
             const closeIcon = document.createElement('span');
             closeIcon.classList.add('calendar-event-tooltip-close');
             closeIcon.innerHTML = '&#9747;';
@@ -185,14 +202,17 @@ export default class Calendar {
                 tooltip.remove();
             });
 
+            //shows the event header
             const eventHeader = document.createElement('h1');
             eventHeader.classList.add('calendar-event-tooltip-header');
             eventHeader.innerText = event.eventName;
 
+            //shows the event time
             const eventTime = document.createElement('div');
             eventTime.classList.add('calendar-event-tooltip-time');
             eventTime.innerText = this._generateDateFromDateToString(event.dateFrom, event.dateTo);
 
+            //alows for the generation of events
             eventBody.appendChild(closeIcon);
             eventBody.appendChild(eventHeader);
             eventBody.appendChild(eventTime);
@@ -201,6 +221,8 @@ export default class Calendar {
         });
     }
 
+    //this allows for the dates to work properly 
+    //extension of lookUpDaysHours.js
     _generateDateFromDateToString(dateFrom, dateTo) {
         const dateFromHour = dateFrom.getHours().toString().padStart(2, '0');
         const dateFromMinute = dateFrom.getMinutes().toString().padStart(2, '0');
@@ -208,6 +230,7 @@ export default class Calendar {
         const dateToMinute = dateTo.getMinutes().toString().padStart(2, '0');
         return `${dateFrom.toLocaleDateString()} ${dateFromHour}:${dateFromMinute} - ${dateTo.toLocaleDateString()} ${dateToHour}:${dateToMinute}`;
     }
+    //creating the size of each event
     _setEventStartEndSize(event) {
         // Check if event start is within this week
         if (this._isThisWeek(event.dateFrom)) {
@@ -241,16 +264,19 @@ export default class Calendar {
         }
     }
 
+    //formulating each cell
     _getCell(day, hour) {
         const row = document.querySelector(`#calendar-body-row-${hour}`);
         return row.querySelector(`[data-day="${day}"]`);
     }
 
+    //getting the height of each cell number
     _getCellHeightAsNumber() {
         return parseFloat(getComputedStyle(document.documentElement)
             .getPropertyValue('--calendar-cell-height').replace('px', ''));
     }
 
+    //getting the name of each event
     _getEventName(event, timeSlots, index) {
         const currentDay = timeSlots[index].day;
         const previousSlotDay = timeSlots[index - 1] ? timeSlots[index - 1].day : null;
@@ -265,11 +291,12 @@ export default class Calendar {
             return '';
         }
     }
-
+//getting each of the hours of the day
     _getDaysAndHours(dateFrom, dateTo) {
         return this._getHours(dateFrom, dateTo);
     }
 
+    //getting each of days of the year
     _getDays(dateFrom, dateTo) {
         const days = [];
         let currentDate = new Date(dateFrom);
@@ -280,6 +307,7 @@ export default class Calendar {
         return days;
     }
 
+    //getting the hours for each day
     _getHours(dateFrom, dateTo) {
         dateFrom = new Date(dateFrom);
         dateTo = new Date(dateTo);
@@ -289,6 +317,7 @@ export default class Calendar {
         return getDaysAndHours(currentDateFrom, currentDateTo);
     }
 
+    //reseting the rows for each day
     _resetAllColumns() {
         const calendarColumns = document.querySelectorAll('.calendar-body-column');
         for (let i = 0; i < calendarColumns.length; i++) {
@@ -298,9 +327,11 @@ export default class Calendar {
         }
     }
 
+    //creating the row properties
     _createCalendarBodyRows() {
         const calendarBodyRows = document.createElement('div');
         calendarBodyRows.classList.add('calendar-body-rows');
+       //creating the rows for each hour
         for (let i = 0; i < 24; i++) {
             const row = this._createCalendarBodyRow();
             row.setAttribute('id', `calendar-body-row-${i}`);
@@ -310,6 +341,7 @@ export default class Calendar {
         return calendarBodyRows;
     }
 
+    //creating the rows
     _createCalendarBodyRow() {
         const calendarBodyRow = document.createElement('div');
         calendarBodyRow.classList.add('calendar-body-row');
@@ -318,10 +350,12 @@ export default class Calendar {
     }
 
     _createCalendarBodyColumns(row) {
+        //create the columns
         const timelineColumn = document.createElement('div');
         timelineColumn.classList.add('calendar-body-column');
         timelineColumn.classList.add('calendar-timeline-column');
         row.appendChild(timelineColumn);
+        //let the calendar add the proper columns
         for (let i = 0; i < 7; i++) {
             const column = document.createElement('div');
             column.dataset.day = (i + 1) % 7;
@@ -331,20 +365,24 @@ export default class Calendar {
     }
 
     _addHeaderButtonEventListeners() {
+        //add the previuous week, next week and today buttons
         const prevWeekButton = document.getElementById('calendar-action-button-prev');
         const nextWeekButton = document.getElementById('calendar-action-button-next');
         const todayButton = document.getElementById('calendar-action-button-today');
 
+        //add the functiality to the  previous week button
         prevWeekButton.addEventListener('click', () => {
             this.setDate(this.currentDate.getDate() - 7);
             this.render();
         });
 
+        //add the functianlity to the next week button
         nextWeekButton.addEventListener('click', () => {
             this.setDate(this.currentDate.getDate() + 7);
             this.render();
         });
 
+        //add the functionality to the today button
         todayButton.addEventListener('click', () => {
             this.currentDate = new Date();
             this.render();
@@ -368,10 +406,12 @@ export default class Calendar {
         });
     }
 
+    //checks to make sure that events follow the correct protocols
     _validateEvents(events) {
         if (!Array.isArray(events)) {
             throw new Error('Events must be an array');
         }
+        //checks to make sure that event start and end dates make logical sense
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
             if (!event.dateFrom || !event.dateTo) {
@@ -380,6 +420,7 @@ export default class Calendar {
             if (event.dateFrom > event.dateTo) {
                 throw new Error('Events must have start date before end date');
             }
+            //checks to make sure events are titled correctly
             if (!event.eventName) {
                 throw new Error('Events must have a name');
             }
@@ -390,11 +431,13 @@ export default class Calendar {
         }
     }
 
+    //gets the events that are needed for the calendar
     _parseEvents(events) {
         const parsedEvents = [];
         for (let i = 0; i < events.length; i++) {
             const event = {
                 ...events[i],
+                //get the colors for the event and the to and from date
                 bgColor: this._getRandomBgColorAndTextColor().bgColor,
                 textColor: this._getRandomBgColorAndTextColor().textColor,
                 dateFrom: new Date(events[i].dateFrom),
@@ -405,6 +448,7 @@ export default class Calendar {
         return parsedEvents;
     }
 
+    //gets the dates of the year
     _getDayName(date) {
         const dayNames = [
             'Sun',
@@ -418,6 +462,7 @@ export default class Calendar {
         return dayNames[date.getDay()];
     }
 
+    //check to see if the date for the complier is monday, start point of i=0
     _getMonday(date) {
         date = new Date(date);
         var day = date.getDay(),
@@ -425,6 +470,7 @@ export default class Calendar {
         return new Date((new Date(date.setDate(diff))).setHours(0, 0, 0, 0));
     }
 
+    //check to see if the date for the complier is sunday, end point of i=6
     _getSunday(date) {
         date = new Date(date);
         var day = date.getDay(),
@@ -432,6 +478,7 @@ export default class Calendar {
         return new Date((new Date(date.setDate(diff + 6))).setHours(23, 59, 59, 999));
     }
 
+    //to make the dates conistant with real time
     _isToday(date) {
         const today = new Date()
         return date.getDate() == today.getDate() &&
@@ -439,6 +486,7 @@ export default class Calendar {
             date.getFullYear() == today.getFullYear()
     }
 
+    //moves the today date to the correct week
     _isThisWeek(date) {
         const monday = this._getMonday(this.getDate()).getTime();
         const sunday = this._getSunday(this.getDate()).getTime();
@@ -446,12 +494,14 @@ export default class Calendar {
     }
 
 
+    //moves the dates from day to day
     _isExistInThisWeek(dateFrom, dateTo) {
         this.counter += 1;
         return this._getMonday(this.getDate()).getTime() >= this._getMonday(dateFrom).getTime() &&
             this._getSunday(this.getDate()).getTime() <= this._getSunday(dateTo).getTime()
     }
 
+    //stores the colors needed for the machine
     _getRandomBgColorAndTextColor() {
         const bgColors = [
             '#f44336',
